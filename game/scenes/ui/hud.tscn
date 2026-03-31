@@ -1,0 +1,131 @@
+[gd_scene load_steps=2 format=3 uid="uid://hud001"]
+
+[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1"]
+
+[node name="HUD" type="CanvasLayer"]
+script = ExtResource("1")
+
+; --- Bottom-left: health ---
+[node name="MarginContainer" type="MarginContainer" parent="."]
+anchors_preset = 3
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 0.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = -80.0
+offset_right = 260.0
+offset_bottom = -16.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+
+[node name="HealthLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+text = "HEALTH"
+theme_override_font_sizes/font_size = 12
+
+[node name="HealthBar" type="ProgressBar" parent="MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(200, 18)
+max_value = 100
+value = 100
+show_percentage = false
+
+[node name="AmmoLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+text = "30 / 30"
+theme_override_font_sizes/font_size = 20
+
+; --- Top-right: score + distance ---
+[node name="TopRight" type="VBoxContainer" parent="."]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 0.0
+offset_left = -200.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = 80.0
+
+[node name="ScoreLabel" type="Label" parent="TopRight"]
+text = "Score: 0"
+horizontal_alignment = 2
+theme_override_font_sizes/font_size = 22
+
+[node name="DistanceLabel" type="Label" parent="TopRight"]
+text = "0m"
+horizontal_alignment = 2
+theme_override_font_sizes/font_size = 16
+
+; --- Center: crosshair + reload ---
+[node name="Center" type="CenterContainer" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -50.0
+offset_top = -50.0
+offset_right = 50.0
+offset_bottom = 50.0
+
+[node name="Crosshair" type="Label" parent="Center"]
+text = "+"
+theme_override_font_sizes/font_size = 28
+modulate = Color(1, 1, 1, 0.8)
+
+[node name="ReloadIndicator" type="Label" parent="Center"]
+text = "RELOADING..."
+theme_override_font_sizes/font_size = 16
+modulate = Color(1, 0.8, 0.2, 1)
+offset_top = 40.0
+visible = false
+
+; --- Full-screen hit flash ---
+[node name="HitFlash" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.8, 0.1, 0.1, 0.0)
+mouse_filter = 2
+
+; --- Game Over panel ---
+[node name="GameOverPanel" type="Panel" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -150.0
+offset_right = 200.0
+offset_bottom = 150.0
+visible = false
+
+[node name="VBox" type="VBoxContainer" parent="GameOverPanel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = -20.0
+alignment = 1
+
+[node name="Title" type="Label" parent="GameOverPanel/VBox"]
+text = "YOU DIED"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 36
+
+[node name="FinalScore" type="Label" parent="GameOverPanel/VBox"]
+text = "Score: 0"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 24
+
+[node name="HighScore" type="Label" parent="GameOverPanel/VBox"]
+text = "Best: 0"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 18
+
+[node name="RestartButton" type="Button" parent="GameOverPanel/VBox"]
+text = "RUN AGAIN"
+custom_minimum_size = Vector2(160, 48)
