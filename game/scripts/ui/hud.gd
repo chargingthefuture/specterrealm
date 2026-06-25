@@ -8,12 +8,22 @@ extends CanvasLayer
 @onready var score_label: Label = $TopRight/ScoreLabel
 @onready var distance_label: Label = $TopRight/DistanceLabel
 @onready var reload_indicator: Label = $Center/ReloadIndicator
-@onready var crosshair: TextureRect = $Center/Crosshair
+@onready var crosshair: Label = $Center/Crosshair
 @onready var hit_flash: ColorRect = $HitFlash
 @onready var game_over_panel: Panel = $GameOverPanel
 @onready var final_score_label: Label = $GameOverPanel/VBox/FinalScore
 @onready var high_score_label: Label = $GameOverPanel/VBox/HighScore
 @onready var restart_button: Button = $GameOverPanel/VBox/RestartButton
+
+# --- Touch controls (iOS PWA / any touchscreen) ---
+@onready var touch_controls: Control = $TouchControls
+@onready var left_button: Button = $TouchControls/LeftButton
+@onready var right_button: Button = $TouchControls/RightButton
+@onready var fire_button: Button = $TouchControls/FireButton
+@onready var reload_button: Button = $TouchControls/ReloadButton
+
+var _player: CharacterBody3D
+var _firing: bool = false
 
 
 func _ready() -> void:
@@ -27,10 +37,57 @@ func _ready() -> void:
 
 	restart_button.pressed.connect(GameManager.restart)
 
+	_setup_touch_controls()
+
+
+# --- Touch controls ---
+
+func _setup_touch_controls() -> void:
+	# Only surface the on-screen controls on touch hardware so desktop/web
+	# players keep a clean screen and use keyboard + mouse.
+	touch_controls.visible = DisplayServer.is_touchscreen_available()
+	if not touch_controls.visible:
+		return
+	left_button.pressed.connect(_on_touch_left)
+	right_button.pressed.connect(_on_touch_right)
+	reload_button.pressed.connect(_on_touch_reload)
+	# Hold-to-fire: weapon enforces its own fire-rate cooldown.
+	fire_button.button_down.connect(_on_touch_fire_down)
+	fire_button.button_up.connect(_on_touch_fire_up)
+
+
+func _on_touch_left() -> void:
+	if _player:
+		_player.switch_lane(-1)
+
+
+func _on_touch_right() -> void:
+	if _player:
+		_player.switch_lane(1)
+
+
+func _on_touch_reload() -> void:
+	if _player:
+		_player.reload()
+
+
+func _on_touch_fire_down() -> void:
+	_firing = true
+
+
+func _on_touch_fire_up() -> void:
+	_firing = false
+
+
+func _process(_delta: float) -> void:
+	if _firing and _player:
+		_player.shoot()
+
 
 # --- Player connections (called by main.gd after instancing player) ---
 
 func connect_player(player: CharacterBody3D) -> void:
+	_player = player
 	player.health_changed.connect(_on_health_changed.bind(player.max_health))
 	var weapon = player.get_node("CameraMount/Camera3D/WeaponMount")
 	weapon.ammo_changed.connect(_on_ammo_changed)

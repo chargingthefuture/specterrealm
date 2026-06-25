@@ -34,7 +34,12 @@ var _game_manager: Node  # set by GameManager after ready
 
 func _ready() -> void:
 	health = max_health
-	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	# On touch devices (iOS PWA) there is no pointer to capture — leave the
+	# cursor visible so the on-screen HUD buttons stay tappable.
+	if DisplayServer.is_touchscreen_available():
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	else:
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	muzzle_flash.visible = false
 
 
@@ -53,8 +58,10 @@ func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("move_right"):
 		_switch_lane(1)
 
-	# Shooting
-	if event.is_action_pressed("shoot"):
+	# Shooting (mouse). On touchscreens, firing is driven by the on-screen
+	# FIRE button instead — Godot emulates mouse clicks from taps, so we skip
+	# this to avoid the lane/reload buttons also firing the weapon.
+	if event.is_action_pressed("shoot") and not DisplayServer.is_touchscreen_available():
 		_try_shoot()
 
 	# Reload
@@ -80,6 +87,26 @@ func _physics_process(delta: float) -> void:
 
 func _switch_lane(direction: int) -> void:
 	current_lane = clamp(current_lane + direction, 0, 2)
+
+
+# --- Public API (used by on-screen touch controls) ---
+
+func switch_lane(direction: int) -> void:
+	if is_dead:
+		return
+	_switch_lane(direction)
+
+
+func shoot() -> void:
+	if is_dead:
+		return
+	_try_shoot()
+
+
+func reload() -> void:
+	if is_dead:
+		return
+	$CameraMount/Camera3D/WeaponMount.reload()
 
 
 func _try_shoot() -> void:

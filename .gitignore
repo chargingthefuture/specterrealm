@@ -1,0 +1,10 @@
+# Godot 4 editor & import cache
+.godot/
+game/.godot/
+
+# Exported / built web bundle (produced by CI)
+build/
+export/
+
+# OS cruft
+.DS_Store
