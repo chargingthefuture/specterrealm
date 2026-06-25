@@ -1,0 +1,81 @@
+name: Deploy PWA
+
+# Builds the Godot web (WebAssembly) export with PWA + offline support and
+# publishes it to GitHub Pages. The resulting URL is installable to the iOS
+# home screen ("Add to Home Screen") and runs offline after first load.
+
+on:
+  push:
+    branches:
+      - main
+      - claude/pwa-offline-ios-uqr4pj
+    paths:
+      - "game/**"
+      - ".github/workflows/deploy-pwa.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+env:
+  GODOT_VERSION: "4.3"
+
+jobs:
+  build:
+    name: Export Web / PWA
+    runs-on: ubuntu-latest
+    container:
+      # Ships Godot 4.3 headless + matching export templates.
+      image: barichello/godot-ci:4.3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Stage export templates for the runner's HOME
+        # In container jobs, GitHub overrides HOME (e.g. /github/home), so the
+        # templates baked into /root are not found. Copy them where Godot looks.
+        run: |
+          mkdir -p "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable"
+          cp -rn /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable/. \
+                 "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable/" 2>/dev/null || true
+
+      - name: Import resources
+        working-directory: game
+        run: godot --headless --import || true
+
+      - name: Export Web build
+        working-directory: game
+        run: |
+          mkdir -p ../build/web
+          godot --headless --export-release "Web" ../build/web/index.html || true
+          # Godot's headless exporter can return non-zero even on success, so
+          # assert on the artifact instead of the exit code.
+          test -f ../build/web/index.html
+
+      - name: Add iOS touch icon and disable Jekyll
+        run: |
+          cp game/icons/icon_180.png build/web/apple-touch-icon.png
+          touch build/web/.nojekyll
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
