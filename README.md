@@ -1,4 +1,4 @@
-# DeadRun
+# SpecterRealm
 
 First-person endless runner survival shooter built with Godot 4.x — inspired by Into the Dead 2.
 
@@ -13,7 +13,7 @@ every push to `main` (see `.github/workflows/deploy-pwa.yml`). Once deployed,
 the live URL is:
 
 ```
-https://<owner>.github.io/specterrealm/
+https://chargingthefuture.github.io/specterrealm/
 ```
 
 **Install it to your home screen (iOS Safari):**

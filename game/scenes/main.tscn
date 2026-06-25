@@ -30,12 +30,11 @@ light_color = Color(0.9, 0.75, 0.6, 1)
 light_energy = 0.6
 shadow_enabled = true
 
-[node name="Player" type="CharacterBody3D" parent="."]
+[node name="Player" parent="." instance=ExtResource("2")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 
 [node name="WorldSpawner" type="Node3D" parent="."]
 script = ExtResource("4")
 enemy_scene = ExtResource("5")
 
-[node name="HUD" type="CanvasLayer" parent="."]
-script = ExtResource("3")
+[node name="HUD" parent="." instance=ExtResource("3")]

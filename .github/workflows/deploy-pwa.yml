@@ -58,9 +58,17 @@ jobs:
           # assert on the artifact instead of the exit code.
           test -f ../build/web/index.html
 
-      - name: Add iOS touch icon and disable Jekyll
+      - name: Patch service worker and disable Jekyll
         run: |
-          cp game/icons/icon_180.png build/web/apple-touch-icon.png
+          # Godot 4.3's web export hardcodes "index.worker.js" into the service
+          # worker's precache list, but that file is only emitted for threaded
+          # builds. This is a single-threaded build, so the file is absent and
+          # cache.addAll() would reject (404), breaking offline support. Strip
+          # the dead reference so the install step succeeds and the game is
+          # genuinely playable offline.
+          sed -i 's/"index\.worker\.js",//' build/web/index.service.worker.js
+          # GitHub Pages runs Jekyll by default, which would skip files Godot
+          # needs; .nojekyll serves the export verbatim.
           touch build/web/.nojekyll
 
       - name: Upload Pages artifact
@@ -71,6 +79,9 @@ jobs:
   deploy:
     name: Deploy to GitHub Pages
     needs: build
+    # Only publish from the default branch. On feature branches the build job
+    # still runs (validating the export), but Pages deploys only from main.
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment:
       name: github-pages

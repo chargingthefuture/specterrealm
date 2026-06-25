@@ -6,7 +6,7 @@ config_version=5
 
 [application]
 
-config/name="DeadRun"
+config/name="SpecterRealm"
 config/description="First-person endless runner survival shooter"
 run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.3", "Forward Plus")
@@ -59,4 +59,5 @@ GameManager="*res://scripts/game_manager.gd"
 [rendering]
 
 textures/canvas_textures/default_texture_filter=0
+textures/vram_compression/import_etc2_astc=true
 environment/defaults/default_clear_color=Color(0.1, 0.08, 0.06, 1)
