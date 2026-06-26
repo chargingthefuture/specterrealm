@@ -127,6 +127,8 @@ func _on_game_over(final_score: int, _distance: float) -> void:
 	game_over_panel.visible = true
 	final_score_label.text = "Score: %d" % final_score
 	high_score_label.text = "Best: %d" % GameManager.high_score
+	# Focus the button so a controller (ui_accept = A) or keyboard can restart.
+	restart_button.grab_focus()
 
 
 func _flash_hit() -> void:
