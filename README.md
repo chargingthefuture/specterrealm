@@ -48,10 +48,25 @@ On-screen buttons appear automatically on touch devices:
 |---|---|
 | Switch lane left | A / ← |
 | Switch lane right | D / → |
-| Shoot | Left mouse button |
+| Shoot | Left mouse button (hold to keep firing) |
 | Reload | R |
 | Pause | Escape |
 | Mouse look | Move mouse (vertical aim only) |
+
+### Game controller (gamepad)
+
+Controllers work everywhere the game runs — including the installed iOS PWA,
+where Safari exposes paired Bluetooth controllers (PlayStation / Xbox, iOS 14+)
+through the browser Gamepad API. Just pair the controller and play; no extra
+setup.
+
+| Action | Control |
+|---|---|
+| Switch lane | D-pad ◀ / ▶ or left stick |
+| Aim (vertical) | Right stick |
+| Shoot | Right trigger (RT/R2) or A / ✕ — hold to keep firing |
+| Reload | X / □ |
+| Restart (on game over) | A / ✕ |
 
 ## Building the PWA locally (optional)
 

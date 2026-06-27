@@ -2,6 +2,7 @@ extends CharacterBody3D
 
 # --- Constants ---
 const MOUSE_SENSITIVITY := 0.002
+const CONTROLLER_LOOK_SPEED := 1.5   # radians/sec for right-stick aim
 const BOB_FREQUENCY := 2.4
 const BOB_AMPLITUDE := 0.06
 
@@ -30,13 +31,15 @@ const LANE_POSITIONS := [-3.0, 0.0, 3.0]
 
 var _bob_time: float = 0.0
 var _game_manager: Node  # set by GameManager after ready
+var _is_touch: bool = false
 
 
 func _ready() -> void:
 	health = max_health
+	_is_touch = DisplayServer.is_touchscreen_available()
 	# On touch devices (iOS PWA) there is no pointer to capture — leave the
 	# cursor visible so the on-screen HUD buttons stay tappable.
-	if DisplayServer.is_touchscreen_available():
+	if _is_touch:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	else:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -52,19 +55,13 @@ func _input(event: InputEvent) -> void:
 		camera_mount.rotate_x(-event.relative.y * MOUSE_SENSITIVITY)
 		camera_mount.rotation.x = clamp(camera_mount.rotation.x, -0.4, 0.4)
 
-	# Lane switching
+	# Lane switching (keyboard A/D, D-pad, or left stick — one hop per press)
 	if event.is_action_pressed("move_left"):
 		_switch_lane(-1)
 	if event.is_action_pressed("move_right"):
 		_switch_lane(1)
 
-	# Shooting (mouse). On touchscreens, firing is driven by the on-screen
-	# FIRE button instead — Godot emulates mouse clicks from taps, so we skip
-	# this to avoid the lane/reload buttons also firing the weapon.
-	if event.is_action_pressed("shoot") and not DisplayServer.is_touchscreen_available():
-		_try_shoot()
-
-	# Reload
+	# Reload (keyboard R or controller face button)
 	if event.is_action_pressed("reload"):
 		$CameraMount/Camera3D/WeaponMount.reload()
 
@@ -72,6 +69,20 @@ func _input(event: InputEvent) -> void:
 func _physics_process(delta: float) -> void:
 	if is_dead:
 		return
+
+	# Hold-to-fire for mouse and controller trigger/button. The weapon enforces
+	# its own fire-rate cooldown. On touchscreens firing is driven by the
+	# on-screen FIRE button instead — Godot emulates mouse clicks from taps, so
+	# we skip polling here to avoid lane/reload taps also firing the weapon.
+	if not _is_touch and Input.is_action_pressed("shoot"):
+		_try_shoot()
+
+	# Right-stick vertical aim (controller). Pushing up looks up, matching the
+	# mouse sign convention; clamped to the same pitch range.
+	var look_input := Input.get_axis("aim_up", "aim_down")
+	if not is_zero_approx(look_input):
+		camera_mount.rotate_x(-look_input * CONTROLLER_LOOK_SPEED * delta)
+		camera_mount.rotation.x = clamp(camera_mount.rotation.x, -0.4, 0.4)
 
 	# Smooth lateral lane movement
 	var target := Vector3(LANE_POSITIONS[current_lane], position.y, position.z)
